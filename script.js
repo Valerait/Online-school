@@ -7,12 +7,80 @@ function scrollToCalendar() {
     });
 }
 
+// Phone number formatting
+function formatPhoneNumber(value) {
+    // Remove all non-digits
+    const cleaned = value.replace(/\D/g, '');
+    
+    // Start with +7
+    let formatted = '+7';
+    
+    if (cleaned.length > 1) {
+        // Add area code in parentheses
+        formatted += ' (' + cleaned.substring(1, 4);
+        
+        if (cleaned.length >= 4) {
+            formatted += ')';
+        }
+        
+        if (cleaned.length >= 5) {
+            // Add first part
+            formatted += ' ' + cleaned.substring(4, 7);
+        }
+        
+        if (cleaned.length >= 8) {
+            // Add second part
+            formatted += '-' + cleaned.substring(7, 9);
+        }
+        
+        if (cleaned.length >= 10) {
+            // Add third part
+            formatted += '-' + cleaned.substring(9, 11);
+        }
+    }
+    
+    return formatted;
+}
+
 // Set minimum date to today
 document.addEventListener('DOMContentLoaded', () => {
     const dateInput = document.getElementById('bookingDate');
     if (dateInput) {
         const today = new Date().toISOString().split('T')[0];
         dateInput.setAttribute('min', today);
+    }
+    
+    // Phone number formatting
+    const phoneInput = document.getElementById('studentPhone');
+    if (phoneInput) {
+        // Set initial value
+        phoneInput.value = '+7 (';
+        
+        phoneInput.addEventListener('input', (e) => {
+            const cursorPosition = e.target.selectionStart;
+            const oldLength = e.target.value.length;
+            
+            e.target.value = formatPhoneNumber(e.target.value);
+            
+            const newLength = e.target.value.length;
+            const diff = newLength - oldLength;
+            
+            // Adjust cursor position
+            e.target.setSelectionRange(cursorPosition + diff, cursorPosition + diff);
+        });
+        
+        phoneInput.addEventListener('focus', (e) => {
+            if (e.target.value === '') {
+                e.target.value = '+7 (';
+            }
+        });
+        
+        phoneInput.addEventListener('keydown', (e) => {
+            // Prevent deleting +7 prefix
+            if ((e.key === 'Backspace' || e.key === 'Delete') && e.target.selectionStart <= 4) {
+                e.preventDefault();
+            }
+        });
     }
     
     // Handle form submission
@@ -27,9 +95,21 @@ async function handleBookingSubmit(e) {
     e.preventDefault();
     
     const formData = new FormData(e.target);
+    const phone = formData.get('studentPhone');
+    
+    // Validate phone format
+    const phoneRegex = /^\+7 \(\d{3}\) \d{3}-\d{2}-\d{2}$/;
+    if (!phoneRegex.test(phone)) {
+        const formMessage = document.getElementById('formMessage');
+        formMessage.style.display = 'block';
+        formMessage.className = 'form-message error';
+        formMessage.textContent = '❌ Пожалуйста, введите корректный номер телефона в формате +7 (777) 123-12-12';
+        return;
+    }
+    
     const data = {
         name: formData.get('studentName'),
-        phone: formData.get('studentPhone'),
+        phone: phone,
         grade: formData.get('studentGrade'),
         subject: formData.get('subject'),
         date: formData.get('bookingDate'),
@@ -66,6 +146,7 @@ ${data.comments ? `\n📝 Комментарий: ${data.comments}` : ''}
     
     // Reset form
     e.target.reset();
+    document.getElementById('studentPhone').value = '+7 (';
     
     // Scroll to message
     formMessage.scrollIntoView({ behavior: 'smooth', block: 'nearest' });

@@ -118,8 +118,19 @@ async function handleBookingSubmit(e) {
         comments: formData.get('comments') || ''
     };
     
-    // Format message for WhatsApp/Telegram
-    const message = `
+    try {
+        // Send to backend
+        const response = await fetch('/api/bookings', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        });
+        
+        if (response.ok) {
+            // Format message for WhatsApp/Telegram
+            const message = `
 🎓 Новая заявка на пробный урок!
 
 👤 Имя: ${data.name}
@@ -130,29 +141,36 @@ async function handleBookingSubmit(e) {
 🕐 Время: ${data.time}
 💬 Связь: ${data.contactMethod}
 ${data.comments ? `\n📝 Комментарий: ${data.comments}` : ''}
-    `.trim();
-    
-    // Show success message
-    const formMessage = document.getElementById('formMessage');
-    formMessage.style.display = 'block';
-    formMessage.className = 'form-message success';
-    formMessage.innerHTML = `
-        <strong>✅ Заявка отправлена!</strong><br>
-        Мы свяжемся с вами в ближайшее время для подтверждения записи.<br><br>
-        <a href="https://wa.me/77001234567?text=${encodeURIComponent(message)}" target="_blank" style="color: #25D366; text-decoration: underline;">
-            Или напишите нам в WhatsApp прямо сейчас
-        </a>
-    `;
-    
-    // Reset form
-    e.target.reset();
-    document.getElementById('studentPhone').value = '+7 (';
+            `.trim();
+            
+            // Show success message
+            const formMessage = document.getElementById('formMessage');
+            formMessage.style.display = 'block';
+            formMessage.className = 'form-message success';
+            formMessage.innerHTML = `
+                <strong>✅ Заявка отправлена!</strong><br>
+                Ваша заявка сохранена в системе. Мы свяжемся с вами в ближайшее время для подтверждения записи.<br><br>
+                <a href="https://wa.me/77001234567?text=${encodeURIComponent(message)}" target="_blank" style="color: #25D366; text-decoration: underline;">
+                    Или напишите нам в WhatsApp прямо сейчас
+                </a>
+            `;
+            
+            // Reset form
+            e.target.reset();
+            document.getElementById('studentPhone').value = '+7 (';
+            
+        } else {
+            throw new Error('Ошибка сервера');
+        }
+    } catch (error) {
+        const formMessage = document.getElementById('formMessage');
+        formMessage.style.display = 'block';
+        formMessage.className = 'form-message error';
+        formMessage.textContent = '❌ Произошла ошибка при отправке заявки. Попробуйте еще раз.';
+    }
     
     // Scroll to message
-    formMessage.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    
-    // Optional: Send to your backend/email service
-    // await fetch('/api/booking', { method: 'POST', body: JSON.stringify(data) });
+    document.getElementById('formMessage').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
 // Add animation on scroll

@@ -566,31 +566,3 @@ body {
         align-items: flex-start;
     }
 }
-
-/* Responsive */
-@media (max-width: 768px) {
-    .sidebar {
-        width: 70px;
-    }
-    
-    .sidebar .logo p,
-    .nav-item span:not(.icon) {
-        display: none;
-    }
-    
-    .main-content {
-        margin-left: 70px;
-        width: calc(100% - 70px);
-    }
-    
-    .metrics-grid,
-    .charts-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .section-header {
-        flex-direction: column;
-        gap: 15px;
-        align-items: flex-start;
-    }
-}

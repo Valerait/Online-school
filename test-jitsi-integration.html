@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест Jitsi интеграции</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .button {
+            background: #3b82f6;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .button:hover {
+            background: #2563eb;
+        }
+        .success {
+            background: #10b981;
+        }
+        .error {
+            background: #ef4444;
+        }
+        .info {
+            background: #f3f4f6;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .test-result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .test-success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #10b981;
+        }
+        .test-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #ef4444;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎥 Тест Jitsi Meet интеграции</h1>
+    
+    <div class="container">
+        <h2>1. Тест авторизации</h2>
+        <div>
+            <input type="text" id="phone" placeholder="+77001111111" value="+77001111111">
+            <input type="password" id="password" placeholder="Пароль" value="123456">
+            <button class="button" onclick="testLogin()">Войти как студент</button>
+            <button class="button" onclick="testTeacherLogin()">Войти как преподаватель</button>
+        </div>
+        <div id="authResult"></div>
+    </div>
+
+    <div class="container">
+        <h2>2. Тест создания урока с Jitsi</h2>
+        <div>
+            <select id="subject">
+                <option value="math">Математика</option>
+                <option value="physics">Физика</option>
+                <option value="chemistry">Химия</option>
+            </select>
+            <input type="date" id="date" value="">
+            <input type="time" id="time" value="14:00">
+            <button class="button" onclick="createBooking()">Создать заявку</button>
+        </div>
+        <div id="bookingResult"></div>
+    </div>
+
+    <div class="container">
+        <h2>3. Тест принятия заявки (преподаватель)</h2>
+        <div>
+            <input type="text" id="bookingId" placeholder="ID заявки">
+            <button class="button" onclick="acceptBooking()">Принять заявку</button>
+        </div>
+        <div id="acceptResult"></div>
+    </div>
+
+    <div class="container">
+        <h2>4. Тест получения данных урока</h2>
+        <div>
+            <input type="text" id="lessonId" placeholder="ID урока">
+            <button class="button" onclick="testLessonData()">Получить данные урока</button>
+        </div>
+        <div id="lessonResult"></div>
+    </div>
+
+    <div class="container">
+        <h2>5. Тест Jitsi компонента</h2>
+        <div class="info">
+            <p><strong>Ссылки для тестирования:</strong></p>
+            <p>• Next.js приложение: <a href="http://localhost:3001" target="_blank">http://localhost:3001</a></p>
+            <p>• Тест Jitsi: <a href="http://localhost:3001/test-jitsi" target="_blank">http://localhost:3001/test-jitsi</a></p>
+            <p>• Вход студента: <a href="http://localhost:3001/login" target="_blank">http://localhost:3001/login</a></p>
+            <p>• Вход преподавателя: <a href="http://localhost:3001/teacher/login" target="_blank">http://localhost:3001/teacher/login</a></p>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>📋 Результаты тестирования</h2>
+        <div id="testResults"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://obzatycdwtdmhgqotbgs.supabase.co/functions/v1';
+        let sessionId = null;
+        let currentUser = null;
+
+        // Устанавливаем завтрашнюю дату по умолчанию
+        document.getElementById('date').value = new Date(Date.now() + 24*60*60*1000).toISOString().split('T')[0];
+
+        function addResult(containerId, message, isSuccess = true) {
+            const container = document.getElementById(containerId);
+            const div = document.createElement('div');
+            div.className = `test-result ${isSuccess ? 'test-success' : 'test-error'}`;
+            div.innerHTML = `<strong>${new Date().toLocaleTimeString()}:</strong> ${message}`;
+            container.appendChild(div);
+        }
+
+        async function testLogin() {
+            const phone = document.getElementById('phone').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await fetch(`${API_BASE}/auth-v2`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone, password })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    sessionId = data.sessionId;
+                    currentUser = data.user;
+                    addResult('authResult', `✅ Успешный вход: ${data.user.name} (${data.user.role})`);
+                    addResult('testResults', `Авторизация студента: УСПЕХ`);
+                } else {
+                    addResult('authResult', `❌ Ошибка входа: ${data.error}`, false);
+                    addResult('testResults', `Авторизация студента: ОШИБКА - ${data.error}`, false);
+                }
+            } catch (error) {
+                addResult('authResult', `❌ Ошибка сети: ${error.message}`, false);
+                addResult('testResults', `Авторизация студента: ОШИБКА СЕТИ`, false);
+            }
+        }
+
+        async function testTeacherLogin() {
+            try {
+                const response = await fetch(`${API_BASE}/teacher-auth`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        email: 'teacher@example.com', 
+                        password: '123456' 
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    sessionId = data.sessionId;
+                    currentUser = data.user;
+                    addResult('authResult', `✅ Успешный вход преподавателя: ${data.user.name}`);
+                    addResult('testResults', `Авторизация преподавателя: УСПЕХ`);
+                } else {
+                    addResult('authResult', `❌ Ошибка входа преподавателя: ${data.error}`, false);
+                    addResult('testResults', `Авторизация преподавателя: ОШИБКА - ${data.error}`, false);
+                }
+            } catch (error) {
+                addResult('authResult', `❌ Ошибка сети: ${error.message}`, false);
+                addResult('testResults', `Авторизация преподавателя: ОШИБКА СЕТИ`, false);
+            }
+        }
+
+        async function createBooking() {
+            if (!sessionId) {
+                addResult('bookingResult', '❌ Сначала войдите в систему', false);
+                return;
+            }
+
+            const subject = document.getElementById('subject').value;
+            const date = document.getElementById('date').value;
+            const time = document.getElementById('time').value;
+
+            try {
+                const response = await fetch(`${API_BASE}/profile?action=book-lesson&sessionId=${sessionId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        subject,
+                        date,
+                        time,
+                        type: 'trial'
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    addResult('bookingResult', `✅ Заявка создана: ID ${data.booking?.id || 'неизвестно'}`);
+                    addResult('testResults', `Создание заявки: УСПЕХ`);
+                    if (data.booking?.id) {
+                        document.getElementById('bookingId').value = data.booking.id;
+                    }
+                } else {
+                    addResult('bookingResult', `❌ Ошибка создания заявки: ${data.error}`, false);
+                    addResult('testResults', `Создание заявки: ОШИБКА - ${data.error}`, false);
+                }
+            } catch (error) {
+                addResult('bookingResult', `❌ Ошибка сети: ${error.message}`, false);
+                addResult('testResults', `Создание заявки: ОШИБКА СЕТИ`, false);
+            }
+        }
+
+        async function acceptBooking() {
+            if (!sessionId || currentUser?.role !== 'teacher') {
+                addResult('acceptResult', '❌ Войдите как преподаватель', false);
+                return;
+            }
+
+            const bookingId = document.getElementById('bookingId').value;
+            if (!bookingId) {
+                addResult('acceptResult', '❌ Введите ID заявки', false);
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/teacher-dashboard-v2?action=accept-booking&sessionId=${sessionId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ bookingId })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    addResult('acceptResult', `✅ Заявка принята, урок создан: ID ${data.lesson?.id || 'неизвестно'}`);
+                    addResult('testResults', `Принятие заявки с Jitsi: УСПЕХ`);
+                    if (data.lesson?.id) {
+                        document.getElementById('lessonId').value = data.lesson.id;
+                    }
+                    if (data.lesson?.meeting_link) {
+                        addResult('acceptResult', `🎥 Jitsi комната: ${data.lesson.meeting_link}`);
+                    }
+                } else {
+                    addResult('acceptResult', `❌ Ошибка принятия заявки: ${data.error}`, false);
+                    addResult('testResults', `Принятие заявки с Jitsi: ОШИБКА - ${data.error}`, false);
+                }
+            } catch (error) {
+                addResult('acceptResult', `❌ Ошибка сети: ${error.message}`, false);
+                addResult('testResults', `Принятие заявки с Jitsi: ОШИБКА СЕТИ`, false);
+            }
+        }
+
+        async function testLessonData() {
+            if (!sessionId) {
+                addResult('lessonResult', '❌ Сначала войдите в систему', false);
+                return;
+            }
+
+            const lessonId = document.getElementById('lessonId').value;
+            if (!lessonId) {
+                addResult('lessonResult', '❌ Введите ID урока', false);
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/lesson?lessonId=${lessonId}&sessionId=${sessionId}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    addResult('lessonResult', `✅ Данные урока получены: ${data.lesson.subject} - ${data.lesson.date}`);
+                    addResult('lessonResult', `🎥 Jitsi комната: ${data.lesson.meeting_link}`);
+                    addResult('lessonResult', `👤 Пользователь: ${data.user.name} (${data.user.role})`);
+                    addResult('testResults', `Получение данных урока: УСПЕХ`);
+                    
+                    // Создаем ссылку на урок
+                    const lessonUrl = `http://localhost:3001/lesson/${lessonId}`;
+                    addResult('lessonResult', `🔗 <a href="${lessonUrl}" target="_blank">Открыть урок в Next.js</a>`);
+                } else {
+                    addResult('lessonResult', `❌ Ошибка получения данных: ${data.error}`, false);
+                    addResult('testResults', `Получение данных урока: ОШИБКА - ${data.error}`, false);
+                }
+            } catch (error) {
+                addResult('lessonResult', `❌ Ошибка сети: ${error.message}`, false);
+                addResult('testResults', `Получение данных урока: ОШИБКА СЕТИ`, false);
+            }
+        }
+
+        // Автоматический тест при загрузке страницы
+        window.onload = function() {
+            addResult('testResults', '🚀 Начало тестирования Jitsi интеграции');
+            addResult('testResults', '📝 Инструкция: 1) Войдите как студент 2) Создайте заявку 3) Войдите как преподаватель 4) Принимите заявку 5) Проверьте данные урока');
+        };
+    </script>
+</body>
+</html>

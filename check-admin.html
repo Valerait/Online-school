@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Проверка администратора</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Проверка администратора</h1>
+        <p>Проверим, есть ли администратор в системе и создадим его при необходимости</p>
+        
+        <button onclick="checkAdmin()">Проверить администратора</button>
+        <button onclick="createAdmin()">Создать администратора</button>
+        <button onclick="testLogin()">Тест входа администратора</button>
+        
+        <div id="result" class="result" style="display: none;"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://obzatycdwtdmhgqotbgs.supabase.co/functions/v1';
+        const SUPABASE_URL = 'https://obzatycdwtdmhgqotbgs.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9iemF0eWNkd3RkbWhncW90YmdzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk1OTM2NDQsImV4cCI6MjA4NTE2OTY0NH0.Y487UOuC1P8f2AKpbXnGLVZAtqObJK3wosg5LIV_aSA';
+
+        async function checkAdmin() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result info';
+            resultDiv.textContent = 'Проверяем администраторов в системе...';
+
+            try {
+                // Проверяем через прямой запрос к Supabase
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/users?role=eq.admin&select=*`, {
+                    headers: {
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const admins = await response.json();
+                
+                if (response.ok) {
+                    if (admins.length > 0) {
+                        resultDiv.className = 'result success';
+                        resultDiv.textContent = `✅ Найдено администраторов: ${admins.length}\n\n` + 
+                            admins.map(admin => 
+                                `Имя: ${admin.name}\nEmail: ${admin.email}\nТелефон: ${admin.phone}\nID: ${admin.id}\nСоздан: ${admin.created_at}`
+                            ).join('\n\n');
+                    } else {
+                        resultDiv.className = 'result error';
+                        resultDiv.textContent = '❌ Администраторов не найдено!\nНужно создать администратора.';
+                    }
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = `❌ Ошибка запроса: ${JSON.stringify(admins)}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ Ошибка сети: ${error.message}`;
+            }
+        }
+
+        async function createAdmin() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result info';
+            resultDiv.textContent = 'Создаем администратора...';
+
+            try {
+                const response = await fetch(`${API_BASE}/auth-v2`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                    },
+                    body: JSON.stringify({
+                        action: 'register',
+                        name: 'Главный Администратор',
+                        email: 'admin@example.com',
+                        phone: '+7 777 000-00-00',
+                        password: 'admin123',
+                        role: 'admin'
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = `✅ Администратор создан успешно!\n\nДанные для входа:\nEmail: admin@example.com\nПароль: admin123\nРоль: ${data.user.role}\nID: ${data.user.id}`;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = `❌ Ошибка создания: ${data.error}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ Ошибка сети: ${error.message}`;
+            }
+        }
+
+        async function testLogin() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result info';
+            resultDiv.textContent = 'Тестируем вход администратора...';
+
+            try {
+                const response = await fetch(`${API_BASE}/auth-v2`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                    },
+                    body: JSON.stringify({
+                        action: 'login',
+                        email: 'admin@example.com',
+                        password: 'admin123'
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = `✅ Вход успешный!\n\nПользователь: ${data.user.name}\nEmail: ${data.user.email}\nРоль: ${data.user.role}\nSession ID: ${data.sessionId}\n\nТеперь можно войти в админ-панель:\nhttp://localhost:3001/admin`;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = `❌ Ошибка входа: ${data.error}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ Ошибка сети: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>

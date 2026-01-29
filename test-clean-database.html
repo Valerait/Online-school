@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест чистой базы данных</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .button {
+            background: #3b82f6;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .button:hover {
+            background: #2563eb;
+        }
+        .success {
+            background: #10b981;
+        }
+        .error {
+            background: #ef4444;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            font-size: 12px;
+        }
+        .result.success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #10b981;
+        }
+        .result.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #ef4444;
+        }
+        .info {
+            background: #f3f4f6;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Тест чистой базы данных</h1>
+    
+    <div class="info">
+        <h3>📋 Тестовые данные в базе:</h3>
+        <p><strong>Студент:</strong> +77001111111 / 123456 (Жанат Х)</p>
+        <p><strong>Преподаватель:</strong> teacher@example.com / 123456 (Анна Петровна)</p>
+        <p><strong>Админ:</strong> +77003333333 / 123456 (Администратор)</p>
+        <p><strong>Предметы преподавателя:</strong> Математика, Физика</p>
+        <p><strong>Тестовая заявка:</strong> Математика, завтра 12:00</p>
+    </div>
+
+    <div class="container">
+        <h2>1. Тест авторизации студента</h2>
+        <input type="text" id="studentPhone" value="+77001111111">
+        <input type="password" id="studentPassword" value="123456">
+        <button class="button" onclick="testStudentLogin()">Войти как студент</button>
+        <div id="studentResult"></div>
+    </div>
+
+    <div class="container">
+        <h2>2. Тест авторизации преподавателя</h2>
+        <input type="email" id="teacherEmail" value="teacher@example.com">
+        <input type="password" id="teacherPassword" value="123456">
+        <button class="button" onclick="testTeacherLogin()">Войти как преподаватель</button>
+        <div id="teacherResult"></div>
+    </div>
+
+    <div class="container">
+        <h2>3. Тест получения заявок преподавателем</h2>
+        <button class="button" onclick="getTeacherBookings()">Получить заявки</button>
+        <div id="bookingsResult"></div>
+    </div>
+
+    <div class="container">
+        <h2>4. Тест принятия заявки</h2>
+        <input type="text" id="bookingId" placeholder="ID заявки (заполнится автоматически)">
+        <button class="button" onclick="acceptBooking()">Принять заявку</button>
+        <div id="acceptResult"></div>
+    </div>
+
+    <div class="container">
+        <h2>5. Тест получения данных урока</h2>
+        <input type="text" id="lessonId" placeholder="ID урока (заполнится автоматически)">
+        <button class="button" onclick="testLessonData()">Получить данные урока</button>
+        <div id="lessonResult"></div>
+    </div>
+
+    <div class="container">
+        <h2>📊 Результаты тестирования</h2>
+        <div id="summaryResult"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://obzatycdwtdmhgqotbgs.supabase.co/functions/v1';
+        let studentSessionId = null;
+        let teacherSessionId = null;
+        let testResults = [];
+
+        function addResult(containerId, message, isSuccess = true) {
+            const container = document.getElementById(containerId);
+            const div = document.createElement('div');
+            div.className = `result ${isSuccess ? 'success' : 'error'}`;
+            div.textContent = `${new Date().toLocaleTimeString()}: ${message}`;
+            container.appendChild(div);
+            
+            // Добавляем в общие результаты
+            testResults.push({
+                test: containerId.replace('Result', ''),
+                success: isSuccess,
+                message: message
+            });
+            updateSummary();
+        }
+
+        function updateSummary() {
+            const summary = document.getElementById('summaryResult');
+            const passed = testResults.filter(r => r.success).length;
+            const total = testResults.length;
+            
+            summary.innerHTML = `
+                <div class="result ${passed === total ? 'success' : 'error'}">
+                    Пройдено тестов: ${passed}/${total}
+                    ${passed === total ? '✅ Все тесты прошли успешно!' : '❌ Есть ошибки'}
+                </div>
+            `;
+        }
+
+        async function testStudentLogin() {
+            const phone = document.getElementById('studentPhone').value;
+            const password = document.getElementById('studentPassword').value;
+
+            try {
+                const response = await fetch(`${API_BASE}/auth-v2`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone, password })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    studentSessionId = data.sessionId;
+                    addResult('studentResult', `✅ Студент вошел: ${data.user.name} (${data.user.role})`);
+                } else {
+                    addResult('studentResult', `❌ Ошибка входа студента: ${data.error}`, false);
+                }
+            } catch (error) {
+                addResult('studentResult', `❌ Ошибка сети: ${error.message}`, false);
+            }
+        }
+
+        async function testTeacherLogin() {
+            const email = document.getElementById('teacherEmail').value;
+            const password = document.getElementById('teacherPassword').value;
+
+            try {
+                const response = await fetch(`${API_BASE}/teacher-auth`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    teacherSessionId = data.sessionId;
+                    addResult('teacherResult', `✅ Преподаватель вошел: ${data.user.name} (${data.user.role})`);
+                } else {
+                    addResult('teacherResult', `❌ Ошибка входа преподавателя: ${data.error}`, false);
+                }
+            } catch (error) {
+                addResult('teacherResult', `❌ Ошибка сети: ${error.message}`, false);
+            }
+        }
+
+        async function getTeacherBookings() {
+            if (!teacherSessionId) {
+                addResult('bookingsResult', '❌ Сначала войдите как преподаватель', false);
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/teacher-dashboard-v2?action=bookings&sessionId=${teacherSessionId}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    addResult('bookingsResult', `✅ Получено заявок: ${data.bookings.length}`);
+                    
+                    const pendingBookings = data.bookings.filter(b => b.status === 'pending');
+                    if (pendingBookings.length > 0) {
+                        document.getElementById('bookingId').value = pendingBookings[0].id;
+                        addResult('bookingsResult', `📋 Найдена заявка: ${pendingBookings[0].subject} - ${pendingBookings[0].date}`);
+                    } else {
+                        addResult('bookingsResult', '⚠️ Нет заявок со статусом "pending"');
+                    }
+                } else {
+                    addResult('bookingsResult', `❌ Ошибка получения заявок: ${data.error}`, false);
+                }
+            } catch (error) {
+                addResult('bookingsResult', `❌ Ошибка сети: ${error.message}`, false);
+            }
+        }
+
+        async function acceptBooking() {
+            if (!teacherSessionId) {
+                addResult('acceptResult', '❌ Сначала войдите как преподаватель', false);
+                return;
+            }
+
+            const bookingId = document.getElementById('bookingId').value;
+            if (!bookingId) {
+                addResult('acceptResult', '❌ Введите ID заявки', false);
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/teacher-dashboard-v2?action=accept-booking&sessionId=${teacherSessionId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ bookingId })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    addResult('acceptResult', `✅ Заявка принята! Урок создан: ${data.lesson?.id}`);
+                    if (data.lesson?.meeting_link) {
+                        addResult('acceptResult', `🎥 Jitsi комната: ${data.lesson.meeting_link}`);
+                        document.getElementById('lessonId').value = data.lesson.id;
+                    }
+                } else {
+                    addResult('acceptResult', `❌ Ошибка принятия заявки: ${data.error}`, false);
+                }
+            } catch (error) {
+                addResult('acceptResult', `❌ Ошибка сети: ${error.message}`, false);
+            }
+        }
+
+        async function testLessonData() {
+            if (!teacherSessionId) {
+                addResult('lessonResult', '❌ Сначала войдите как преподаватель', false);
+                return;
+            }
+
+            const lessonId = document.getElementById('lessonId').value;
+            if (!lessonId) {
+                addResult('lessonResult', '❌ Введите ID урока', false);
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/lesson?lessonId=${lessonId}&sessionId=${teacherSessionId}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    addResult('lessonResult', `✅ Данные урока получены: ${data.lesson.subject} - ${data.lesson.date}`);
+                    addResult('lessonResult', `🎥 Jitsi комната: ${data.lesson.meeting_link}`);
+                    addResult('lessonResult', `👤 Пользователь: ${data.user.name} (${data.user.role})`);
+                    
+                    // Создаем ссылку на урок
+                    const lessonUrl = `http://localhost:3001/lesson/${lessonId}`;
+                    addResult('lessonResult', `🔗 Ссылка на урок: ${lessonUrl}`);
+                } else {
+                    addResult('lessonResult', `❌ Ошибка получения данных урока: ${data.error}`, false);
+                }
+            } catch (error) {
+                addResult('lessonResult', `❌ Ошибка сети: ${error.message}`, false);
+            }
+        }
+
+        // Автоматический запуск тестов
+        window.onload = function() {
+            addResult('summaryResult', '🚀 Тестирование чистой базы данных начато');
+        };
+    </script>
+</body>
+</html>

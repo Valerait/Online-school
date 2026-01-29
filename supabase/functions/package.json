@@ -1,0 +1,12 @@
+{
+  "name": "online-school-supabase-functions",
+  "version": "1.0.0",
+  "description": "Supabase Edge Functions for Online School",
+  "scripts": {
+    "deploy": "supabase functions deploy",
+    "serve": "supabase functions serve"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.38.0"
+  }
+}

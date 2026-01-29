@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест админ-панели</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .stat-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+        }
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Тест админ-панели</h1>
+        <p>Тестирование функций администратора онлайн-школы</p>
+        
+        <!-- Авторизация -->
+        <div class="test-section">
+            <h3>1. Авторизация администратора</h3>
+            <p>Сначала войдите как администратор:</p>
+            <input type="email" id="adminEmail" placeholder="Email администратора" value="admin@example.com" style="padding: 8px; margin: 5px; width: 200px;">
+            <input type="password" id="adminPassword" placeholder="Пароль" value="admin123" style="padding: 8px; margin: 5px; width: 200px;">
+            <button onclick="loginAdmin()">Войти как админ</button>
+            <div id="loginResult" class="result"></div>
+        </div>
+
+        <!-- Статистика -->
+        <div class="test-section">
+            <h3>2. Загрузка статистики</h3>
+            <button onclick="loadStats()">Загрузить статистику</button>
+            <div id="statsResult" class="result"></div>
+            <div id="statsDisplay" class="stats-grid"></div>
+        </div>
+
+        <!-- Пользователи -->
+        <div class="test-section">
+            <h3>3. Управление пользователями</h3>
+            <button onclick="loadUsers()">Загрузить пользователей</button>
+            <button onclick="createTestUser()">Создать тестового пользователя</button>
+            <div id="usersResult" class="result"></div>
+        </div>
+
+        <!-- Уроки -->
+        <div class="test-section">
+            <h3>4. Управление уроками</h3>
+            <button onclick="loadLessons()">Загрузить уроки</button>
+            <div id="lessonsResult" class="result"></div>
+        </div>
+
+        <!-- Заявки -->
+        <div class="test-section">
+            <h3>5. Управление заявками</h3>
+            <button onclick="loadBookings()">Загрузить заявки</button>
+            <div id="bookingsResult" class="result"></div>
+        </div>
+
+        <!-- Платежи -->
+        <div class="test-section">
+            <h3>6. Управление платежами</h3>
+            <button onclick="loadPayments()">Загрузить платежи</button>
+            <div id="paymentsResult" class="result"></div>
+        </div>
+
+        <!-- Отчеты -->
+        <div class="test-section">
+            <h3>7. Отчеты</h3>
+            <select id="reportPeriod">
+                <option value="week">За неделю</option>
+                <option value="month" selected>За месяц</option>
+                <option value="quarter">За квартал</option>
+                <option value="year">За год</option>
+            </select>
+            <button onclick="loadReports()">Загрузить отчет</button>
+            <div id="reportsResult" class="result"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://obzatycdwtdmhgqotbgs.supabase.co/functions/v1';
+        let sessionId = null;
+
+        // Авторизация администратора
+        async function loginAdmin() {
+            const email = document.getElementById('adminEmail').value;
+            const password = document.getElementById('adminPassword').value;
+            const resultDiv = document.getElementById('loginResult');
+
+            try {
+                const response = await fetch(`${API_BASE}/auth-v2`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9iemF0eWNkd3RkbWhncW90YmdzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk1OTM2NDQsImV4cCI6MjA4NTE2OTY0NH0.Y487UOuC1P8f2AKpbXnGLVZAtqObJK3wosg5LIV_aSA'
+                    },
+                    body: JSON.stringify({
+                        action: 'login',
+                        email: email,
+                        password: password
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    sessionId = data.sessionId;
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = `✅ Успешная авторизация!\nПользователь: ${data.user.name}\nРоль: ${data.user.role}\nSession ID: ${sessionId}`;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = `❌ Ошибка авторизации: ${data.error}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ Ошибка сети: ${error.message}`;
+            }
+        }
+
+        // Загрузка статистики
+        async function loadStats() {
+            if (!sessionId) {
+                alert('Сначала авторизуйтесь!');
+                return;
+            }
+
+            const resultDiv = document.getElementById('statsResult');
+            const displayDiv = document.getElementById('statsDisplay');
+
+            try {
+                const response = await fetch(`${API_BASE}/admin?action=stats&sessionId=${sessionId}`, {
+                    headers: {
+                        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9iemF0eWNkd3RkbWhncW90YmdzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk1OTM2NDQsImV4cCI6MjA4NTE2OTY0NH0.Y487UOuC1P8f2AKpbXnGLVZAtqObJK3wosg5LIV_aSA'
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = '✅ Статистика загружена успешно!';
+                    
+                    const stats = data.stats;
+                    displayDiv.innerHTML = `
+                        <div class="stat-card">
+                            <div class="stat-number">${stats.totalUsers}</div>
+                            <div class="stat-label">Всего пользователей</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">${stats.totalStudents}</div>
+                            <div class="stat-label">Студентов</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">${stats.totalTeachers}</div>
+                            <div class="stat-label">Преподавателей</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">${stats.totalLessons}</div>
+                            <div class="stat-label">Всего уроков</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">${stats.totalRevenue.toLocaleString()}₸</div>
+                            <div class="stat-label">Общий доход</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">${stats.pendingBookings}</div>
+                            <div class="stat-label">Ожидают подтверждения</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">${stats.activeLessons}</div>
+                            <div class="stat-label">Активных уроков</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">${stats.totalPayments}</div>
+                            <div class="stat-label">Всего платежей</div>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = `❌ Ошибка загрузки статистики: ${data.error}`;
+                    displayDiv.innerHTML = '';
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ Ошибка сети: ${error.message}`;
+                displayDiv.innerHTML = '';
+            }
+        }
+
+        // Загрузка пользователей
+        async function loadUsers() {
+            if (!sessionId) {
+                alert('Сначала авторизуйтесь!');
+                return;
+            }
+
+            const resultDiv = document.getElementById('usersResult');
+
+            try {
+                const response = await fetch(`${API_BASE}/admin?action=users&sessionId=${sessionId}`, {
+                    headers: {
+                        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9iemF0eWNkd3RkbWhncW90YmdzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk1OTM2NDQsImV4cCI6MjA4NTE2OTY0NH0.Y487UOuC1P8f2AKpbXnGLVZAtqObJK3wosg5LIV_aSA'
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = `✅ Загружено пользователей: ${data.users.length}\n\n` + 
+                        data.users.slice(0, 5).map(user => 
+                            `${user.name} (${user.email}) - ${user.role} - ${user.phone || 'Нет телефона'}`
+                        ).join('\n') + 
+                        (data.users.length > 5 ? '\n... и еще ' + (data.users.length - 5) + ' пользователей' : '');
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = `❌ Ошибка загрузки пользователей: ${data.error}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ Ошибка сети: ${error.message}`;
+            }
+        }
+
+        // Создание тестового пользователя
+        async function createTestUser() {
+            if (!sessionId) {
+                alert('Сначала авторизуйтесь!');
+                return;
+            }
+
+            const resultDiv = document.getElementById('usersResult');
+
+            try {
+                const response = await fetch(`${API_BASE}/admin?action=create-user&sessionId=${sessionId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9iemF0eWNkd3RkbWhncW90YmdzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk1OTM2NDQsImV4cCI6MjA4NTE2OTY0NH0.Y487UOuC1P8f2AKpbXnGLVZAtqObJK3wosg5LIV_aSA'
+                    },
+                    body: JSON.stringify({
+                        name: 'Тестовый Студент',
+                        email: `test${Date.now()}@example.com`,
+                        phone: '+7 777 123-45-67',
+                        role: 'student',
+                        grade: 10,
+                        password: 'test123'
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = `✅ Тестовый пользователь создан!\nИмя: ${data.user.name}\nEmail: ${data.user.email}\nРоль: ${data.user.role}`;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = `❌ Ошибка создания пользователя: ${data.error}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ Ошибка сети: ${error.message}`;
+            }
+        }
+
+        // Загрузка уроков
+        async function loadLessons() {
+            if (!sessionId) {
+                alert('Сначала авторизуйтесь!');
+                return;
+            }
+
+            const resultDiv = document.getElementById('lessonsResult');
+
+            try {
+                const response = await fetch(`${API_BASE}/admin?action=lessons&sessionId=${sessionId}`, {
+                    headers: {
+                        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9iemF0eWNkd3RkbWhncW90YmdzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk1OTM2NDQsImV4cCI6MjA4NTE2OTY0NH0.Y487UOuC1P8f2AKpbXnGLVZAtqObJK3wosg5LIV_aSA'
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = `✅ Загружено уроков: ${data.lessons.length}\n\n` + 
+                        data.lessons.slice(0, 3).map(lesson => 
+                            `${lesson.subject} - ${lesson.date} ${lesson.time} - ${lesson.status}\nСтудент: ${lesson.student?.name || 'Не указан'}\nПреподаватель: ${lesson.teacher?.name || 'Не указан'}`
+                        ).join('\n\n') + 
+                        (data.lessons.length > 3 ? '\n\n... и еще ' + (data.lessons.length - 3) + ' уроков' : '');
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = `❌ Ошибка загрузки уроков: ${data.error}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ Ошибка сети: ${error.message}`;
+            }
+        }
+
+        // Загрузка заявок
+        async function loadBookings() {
+            if (!sessionId) {
+                alert('Сначала авторизуйтесь!');
+                return;
+            }
+
+            const resultDiv = document.getElementById('bookingsResult');
+
+            try {
+                const response = await fetch(`${API_BASE}/admin?action=bookings&sessionId=${sessionId}`, {
+                    headers: {
+                        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9iemF0eWNkd3RkbWhncW90YmdzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk1OTM2NDQsImV4cCI6MjA4NTE2OTY0NH0.Y487UOuC1P8f2AKpbXnGLVZAtqObJK3wosg5LIV_aSA'
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = `✅ Загружено заявок: ${data.bookings.length}\n\n` + 
+                        data.bookings.slice(0, 3).map(booking => 
+                            `${booking.subject} - ${booking.date} ${booking.time} - ${booking.status}\nСтудент: ${booking.user?.name || 'Не указан'} (${booking.user?.phone || 'Нет телефона'})\nПреподаватель: ${booking.teacher?.name || 'Не назначен'}`
+                        ).join('\n\n') + 
+                        (data.bookings.length > 3 ? '\n\n... и еще ' + (data.bookings.length - 3) + ' заявок' : '');
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = `❌ Ошибка загрузки заявок: ${data.error}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ Ошибка сети: ${error.message}`;
+            }
+        }
+
+        // Загрузка платежей
+        async function loadPayments() {
+            if (!sessionId) {
+                alert('Сначала авторизуйтесь!');
+                return;
+            }
+
+            const resultDiv = document.getElementById('paymentsResult');
+
+            try {
+                const response = await fetch(`${API_BASE}/admin?action=payments&sessionId=${sessionId}`, {
+                    headers: {
+                        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9iemF0eWNkd3RkbWhncW90YmdzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk1OTM2NDQsImV4cCI6MjA4NTE2OTY0NH0.Y487UOuC1P8f2AKpbXnGLVZAtqObJK3wosg5LIV_aSA'
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = `✅ Загружено платежей: ${data.payments.length}\n\nСтатистика:\n` +
+                        `Общий доход: ${data.stats.totalRevenue.toLocaleString()}₸\n` +
+                        `Доход за сегодня: ${data.stats.todayRevenue.toLocaleString()}₸\n` +
+                        `Доход за месяц: ${data.stats.monthRevenue.toLocaleString()}₸\n` +
+                        `Ожидающих оплаты: ${data.stats.pendingPayments}\n` +
+                        `Неудачных платежей: ${data.stats.failedPayments}\n\n` +
+                        (data.payments.length > 0 ? 
+                            'Последние платежи:\n' + data.payments.slice(0, 3).map(payment => 
+                                `${payment.amount}₸ - ${payment.status} - ${payment.user?.name || 'Неизвестен'}`
+                            ).join('\n') : 'Платежей пока нет');
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = `❌ Ошибка загрузки платежей: ${data.error}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ Ошибка сети: ${error.message}`;
+            }
+        }
+
+        // Загрузка отчетов
+        async function loadReports() {
+            if (!sessionId) {
+                alert('Сначала авторизуйтесь!');
+                return;
+            }
+
+            const period = document.getElementById('reportPeriod').value;
+            const resultDiv = document.getElementById('reportsResult');
+
+            try {
+                const response = await fetch(`${API_BASE}/admin?action=reports&period=${period}&sessionId=${sessionId}`, {
+                    headers: {
+                        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9iemF0eWNkd3RkbWhncW90YmdzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk1OTM2NDQsImV4cCI6MjA4NTE2OTY0NH0.Y487UOuC1P8f2AKpbXnGLVZAtqObJK3wosg5LIV_aSA'
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    const report = data.report;
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = `✅ Отчет за ${getPeriodName(period)} загружен!\n\n` +
+                        `Общий доход: ${report.totalRevenue.toLocaleString()}₸\n` +
+                        `Всего уроков: ${report.totalLessons}\n` +
+                        `Новых студентов: ${report.totalStudents}\n` +
+                        `Новых преподавателей: ${report.totalTeachers}\n` +
+                        `Пробных уроков: ${report.trialLessons}\n` +
+                        `Платных уроков: ${report.paidLessons}\n` +
+                        `Завершенных уроков: ${report.completedLessons}\n` +
+                        `Отмененных уроков: ${report.canceledLessons}\n` +
+                        `Средний доход за урок: ${report.averageRevenuePerLesson.toLocaleString()}₸\n\n` +
+                        `Статистика по предметам:\n` +
+                        report.subjectStats.map(stat => `${stat.subject}: ${stat.count} уроков, ${stat.revenue.toLocaleString()}₸`).join('\n');
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = `❌ Ошибка загрузки отчета: ${data.error}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ Ошибка сети: ${error.message}`;
+            }
+        }
+
+        function getPeriodName(period) {
+            const names = {
+                'week': 'неделю',
+                'month': 'месяц',
+                'quarter': 'квартал',
+                'year': 'год'
+            };
+            return names[period] || period;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест принятия заявки</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .button {
+            background: #3b82f6;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .button:hover {
+            background: #2563eb;
+        }
+        .success {
+            background: #10b981;
+        }
+        .error {
+            background: #ef4444;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            white-space: pre-wrap;
+        }
+        .result.success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #10b981;
+        }
+        .result.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #ef4444;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Тест принятия заявки</h1>
+    
+    <div class="container">
+        <h2>1. Авторизация преподавателя</h2>
+        <input type="email" id="email" placeholder="teacher@example.com" value="teacher@example.com">
+        <input type="password" id="password" placeholder="Пароль" value="123456">
+        <button class="button" onclick="loginTeacher()">Войти</button>
+        <div id="loginResult"></div>
+    </div>
+
+    <div class="container">
+        <h2>2. Получение заявок</h2>
+        <button class="button" onclick="getBookings()">Получить заявки</button>
+        <div id="bookingsResult"></div>
+    </div>
+
+    <div class="container">
+        <h2>3. Принятие заявки</h2>
+        <input type="text" id="bookingId" placeholder="ID заявки (будет заполнен автоматически)">
+        <button class="button" onclick="acceptBooking()">Принять заявку</button>
+        <div id="acceptResult"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://obzatycdwtdmhgqotbgs.supabase.co/functions/v1';
+        let sessionId = null;
+
+        function addResult(containerId, message, isSuccess = true) {
+            const container = document.getElementById(containerId);
+            const div = document.createElement('div');
+            div.className = `result ${isSuccess ? 'success' : 'error'}`;
+            div.textContent = `${new Date().toLocaleTimeString()}: ${message}`;
+            container.appendChild(div);
+        }
+
+        async function loginTeacher() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await fetch(`${API_BASE}/teacher-auth`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    sessionId = data.sessionId;
+                    addResult('loginResult', `✅ Успешный вход: ${data.user.name} (ID: ${data.user.id})`);
+                } else {
+                    addResult('loginResult', `❌ Ошибка входа: ${data.error}`, false);
+                }
+            } catch (error) {
+                addResult('loginResult', `❌ Ошибка сети: ${error.message}`, false);
+            }
+        }
+
+        async function getBookings() {
+            if (!sessionId) {
+                addResult('bookingsResult', '❌ Сначала войдите в систему', false);
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/teacher-dashboard-v2?action=bookings&sessionId=${sessionId}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    addResult('bookingsResult', `✅ Получено заявок: ${data.bookings.length}`);
+                    
+                    if (data.bookings.length > 0) {
+                        const pendingBookings = data.bookings.filter(b => b.status === 'pending');
+                        if (pendingBookings.length > 0) {
+                            document.getElementById('bookingId').value = pendingBookings[0].id;
+                            addResult('bookingsResult', `📋 Первая заявка: ${pendingBookings[0].subject} - ${pendingBookings[0].date} ${pendingBookings[0].time}`);
+                        } else {
+                            addResult('bookingsResult', '⚠️ Нет заявок со статусом "pending"');
+                        }
+                    }
+                    
+                    addResult('bookingsResult', `Детали: ${JSON.stringify(data.bookings, null, 2)}`);
+                } else {
+                    addResult('bookingsResult', `❌ Ошибка получения заявок: ${data.error}`, false);
+                }
+            } catch (error) {
+                addResult('bookingsResult', `❌ Ошибка сети: ${error.message}`, false);
+            }
+        }
+
+        async function acceptBooking() {
+            if (!sessionId) {
+                addResult('acceptResult', '❌ Сначала войдите в систему', false);
+                return;
+            }
+
+            const bookingId = document.getElementById('bookingId').value;
+            if (!bookingId) {
+                addResult('acceptResult', '❌ Введите ID заявки', false);
+                return;
+            }
+
+            try {
+                addResult('acceptResult', `🔄 Принимаю заявку ${bookingId}...`);
+                
+                const response = await fetch(`${API_BASE}/teacher-dashboard-v2?action=accept-booking&sessionId=${sessionId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ bookingId })
+                });
+
+                const data = await response.json();
+                
+                addResult('acceptResult', `📡 Ответ сервера: ${JSON.stringify(data, null, 2)}`);
+                
+                if (data.success) {
+                    addResult('acceptResult', `✅ Заявка принята! Урок создан: ${data.lesson?.id}`);
+                    if (data.lesson?.meeting_link) {
+                        addResult('acceptResult', `🎥 Jitsi комната: ${data.lesson.meeting_link}`);
+                    }
+                } else {
+                    addResult('acceptResult', `❌ Ошибка: ${data.error}`, false);
+                }
+            } catch (error) {
+                addResult('acceptResult', `❌ Ошибка сети: ${error.message}`, false);
+                console.error('Full error:', error);
+            }
+        }
+
+        // Автоматический вход при загрузке
+        window.onload = function() {
+            addResult('loginResult', '🚀 Страница загружена. Нажмите "Войти" для начала тестирования.');
+        };
+    </script>
+</body>
+</html>

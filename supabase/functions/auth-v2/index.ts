@@ -28,6 +28,28 @@ serve(async (req) => {
     const url = new URL(req.url)
     const action = url.searchParams.get('action')
 
+    // Обработка GET запросов для тестирования
+    if (req.method === 'GET') {
+      if (action === 'test') {
+        return new Response(
+          JSON.stringify({ 
+            success: true, 
+            message: 'Auth API работает!',
+            timestamp: new Date().toISOString(),
+            url: req.url
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+      
+      return new Response(
+        JSON.stringify({ 
+          error: 'GET запросы поддерживаются только для тестирования. Используйте action=test' 
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
     if (req.method === 'POST') {
       const body = await req.json()
 
@@ -295,6 +317,12 @@ serve(async (req) => {
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
+
+    // Если действие не найдено в POST запросах
+    return new Response(
+      JSON.stringify({ error: `Неизвестное действие: ${action}. Доступные действия: register, login, verify` }),
+      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
 
     return new Response(
       JSON.stringify({ error: 'Method not allowed' }),

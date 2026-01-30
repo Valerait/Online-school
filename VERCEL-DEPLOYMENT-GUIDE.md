@@ -12,6 +12,10 @@
 
 ### 2. Настройка проекта в Vercel
 
+#### Project Name:
+- Используйте новое имя: **`online-school-v2`** или **`online-tutoring-platform`**
+- (Старое имя "online-school" уже занято)
+
 #### Framework Preset:
 - Выберите: **Next.js**
 

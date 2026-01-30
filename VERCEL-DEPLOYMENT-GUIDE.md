@@ -17,25 +17,32 @@
 - (Старое имя "online-school" уже занято)
 
 #### Framework Preset:
-- Выберите: **Next.js**
+- Выберите: **Next.js** (должно определиться автоматически)
 
 #### Root Directory:
-- Установите: `online-school-nextjs`
+- ⚠️ **ВАЖНО**: Установите: `online-school-nextjs`
 - ✅ Include source files outside of the Root Directory in the Build Step
 
 #### Build and Output Settings:
 - Build Command: `npm run build` (автоматически)
-- Output Directory: `.next` (автоматически)
+- Output Directory: `.next` (автоматически)  
 - Install Command: `npm install` (автоматически)
+- Node.js Version: `18.x` (рекомендуется)
 
 ### 3. Environment Variables (Переменные окружения)
 
-Добавьте следующие переменные в Vercel Dashboard → Settings → Environment Variables:
+⚠️ **ВАЖНО**: Добавьте переменные в Vercel Dashboard → Settings → Environment Variables (НЕ в vercel.json):
 
 ```
 NEXT_PUBLIC_SUPABASE_URL=https://obzatycdwtdmhgqotbgs.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9iemF0eWNkd3RkbWhncW90YmdzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk1OTM2NDQsImV4cCI6MjA4NTE2OTY0NH0.Y487UOuC1P8f2AKpbXnGLVZAtqObJK3wosg5LIV_aSA
 ```
+
+**Как добавить:**
+1. После создания проекта перейдите в Settings
+2. Найдите раздел "Environment Variables"
+3. Добавьте каждую переменную отдельно
+4. Выберите Environment: Production, Preview, Development (все три)
 
 ### 4. Деплой
 
@@ -58,17 +65,11 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzd
 ### vercel.json
 ```json
 {
-  "version": 2,
-  "buildCommand": "cd online-school-nextjs && npm run build",
-  "outputDirectory": "online-school-nextjs/.next",
-  "installCommand": "cd online-school-nextjs && npm install",
-  "framework": "nextjs",
-  "env": {
-    "NEXT_PUBLIC_SUPABASE_URL": "https://obzatycdwtdmhgqotbgs.supabase.co",
-    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "eyJ..."
-  }
+  "version": 2
 }
 ```
+
+**Примечание**: Используется минимальная конфигурация. Vercel автоматически определит Next.js проект в папке `online-school-nextjs/` когда вы установите Root Directory.
 
 ### Структура проекта:
 ```

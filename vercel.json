@@ -1,11 +1,3 @@
 {
-  "version": 2,
-  "buildCommand": "cd online-school-nextjs && npm run build",
-  "outputDirectory": "online-school-nextjs/.next",
-  "installCommand": "cd online-school-nextjs && npm install",
-  "framework": "nextjs",
-  "env": {
-    "NEXT_PUBLIC_SUPABASE_URL": "https://obzatycdwtdmhgqotbgs.supabase.co",
-    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9iemF0eWNkd3RkbWhncW90YmdzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk1OTM2NDQsImV4cCI6MjA4NTE2OTY0NH0.Y487UOuC1P8f2AKpbXnGLVZAtqObJK3wosg5LIV_aSA"
-  }
+  "version": 2
 }

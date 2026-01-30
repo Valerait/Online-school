@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Быстрое создание преподавателя</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 18px;
+            width: 100%;
+            margin: 10px 0;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>👨‍🏫 Создание тестового преподавателя</h1>
+        <p>Создайте преподавателя для входа в систему</p>
+        
+        <div class="info">
+            <strong>Данные преподавателя:</strong><br>
+            Имя: Мария Преподавателева<br>
+            Телефон: +7 777 222-22-22<br>
+            Email: teacher@example.com<br>
+            Пароль: 123456<br>
+            Предметы: Математика, Физика
+        </div>
+        
+        <button onclick="createTeacher()">Создать преподавателя</button>
+        <button onclick="testLogin()">Проверить вход</button>
+        
+        <div id="result" class="result" style="display: none;"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://obzatycdwtdmhgqotbgs.supabase.co/functions/v1';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9iemF0eWNkd3RkbWhncW90YmdzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk1OTM2NDQsImV4cCI6MjA4NTE2OTY0NH0.Y487UOuC1P8f2AKpbXnGLVZAtqObJK3wosg5LIV_aSA';
+
+        async function createTeacher() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result info';
+            resultDiv.textContent = 'Создаем преподавателя...';
+
+            try {
+                const response = await fetch(`${API_BASE}/auth-v2?action=register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                    },
+                    body: JSON.stringify({
+                        name: 'Мария Преподавателева',
+                        phone: '+7 777 222-22-22',
+                        email: 'teacher@example.com',
+                        password: '123456',
+                        role: 'teacher',
+                        bio: 'Опытный преподаватель математики и физики с 10-летним стажем',
+                        subjects: ['Математика', 'Физика'],
+                        price_per_lesson: 7000
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = `✅ Преподаватель успешно создан!
+
+Данные для входа:
+📞 Телефон: +7 777 222-22-22
+🔑 Пароль: 123456
+👤 Роль: ${data.user.role}
+📧 Email: ${data.user.email}
+
+Теперь можете войти в систему!`;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = `❌ Ошибка создания преподавателя: ${data.error}
+
+Возможные причины:
+- Пользователь с таким телефоном уже существует
+- Проблема с API
+- Неверные данные`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ Ошибка сети: ${error.message}
+
+Проверьте:
+- Подключение к интернету
+- Работу Supabase API
+- Правильность URL`;
+            }
+        }
+
+        async function testLogin() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result info';
+            resultDiv.textContent = 'Проверяем вход преподавателя...';
+
+            try {
+                const response = await fetch(`${API_BASE}/auth-v2?action=login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                    },
+                    body: JSON.stringify({
+                        phone: '+7 777 222-22-22',
+                        password: '123456',
+                        role: 'teacher'
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = `✅ Вход успешный!
+
+Пользователь: ${data.user.name}
+Телефон: ${data.user.phone}
+Email: ${data.user.email}
+Роль: ${data.user.role}
+Session ID: ${data.sessionId}
+
+Преподаватель может войти в систему!`;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = `❌ Ошибка входа: ${data.error}
+
+Это означает, что преподаватель еще не создан.
+Нажмите "Создать преподавателя" сначала.`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ Ошибка сети: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>

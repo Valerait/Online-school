@@ -61,9 +61,8 @@
         <h1>👥 Создание тестовых пользователей</h1>
         <p>Создайте тестовых пользователей для проверки системы</p>
         
-        <button onclick="createAllUsers()">Создать всех пользователей</button>
+        <button onclick="createAllUsers()">Создать студента</button>
         <button onclick="createStudent()">Создать студента</button>
-        <button onclick="createTeacher()">Создать преподавателя</button>
         <button onclick="checkUsers()">Проверить пользователей</button>
         
         <div id="result" class="result" style="display: none;"></div>
@@ -78,20 +77,17 @@
         </div>
         
         <div class="user-card">
-            <h3>👨‍🏫 Тестовый преподаватель</h3>
-            <p><strong>Имя:</strong> Мария Преподавателева</p>
-            <p><strong>Телефон:</strong> +7 777 222-22-22</p>
-            <p><strong>Email:</strong> teacher@example.com</p>
-            <p><strong>Пароль:</strong> 123456</p>
-            <p><strong>Предметы:</strong> Математика, Физика</p>
-        </div>
-        
-        <div class="user-card">
             <h3>👨‍💼 Администратор</h3>
-            <p><strong>Имя:</strong> Главный Администратор</p>
             <p><strong>Email:</strong> admin@example.com</p>
             <p><strong>Пароль:</strong> admin123</p>
-            <p><em>Уже создан ранее</em></p>
+            <p><em>Может создавать преподавателей через админ-панель</em></p>
+        </div>
+        
+        <div class="user-card" style="border-left-color: #dc3545; background-color: #fff5f5;">
+            <h3>⚠️ Важно: Преподаватели</h3>
+            <p><strong>Преподавателей может создавать только администратор!</strong></p>
+            <p>Войдите как администратор и используйте админ-панель:</p>
+            <p><a href="/admin" target="_blank">Перейти в админ-панель</a></p>
         </div>
     </div>
 
@@ -138,67 +134,22 @@
             }
         }
 
-        async function createTeacher() {
-            const resultDiv = document.getElementById('result');
-            resultDiv.style.display = 'block';
-            resultDiv.className = 'result';
-            resultDiv.textContent = 'Создаем преподавателя...';
-
-            try {
-                const response = await fetch(`${API_BASE}/auth-v2`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
-                    },
-                    body: JSON.stringify({
-                        action: 'register',
-                        name: 'Мария Преподавателева',
-                        phone: '+7 777 222-22-22',
-                        email: 'teacher@example.com',
-                        password: '123456',
-                        role: 'teacher',
-                        bio: 'Опытный преподаватель математики и физики',
-                        subjects: ['Математика', 'Физика'],
-                        price_per_lesson: 7000
-                    })
-                });
-
-                const data = await response.json();
-                
-                if (data.success) {
-                    resultDiv.className = 'result success';
-                    resultDiv.textContent = `✅ Преподаватель создан!\n\nДанные для входа:\nТелефон: +7 777 222-22-22\nПароль: 123456\nРоль: ${data.user.role}`;
-                } else {
-                    resultDiv.className = 'result error';
-                    resultDiv.textContent = `❌ Ошибка создания преподавателя: ${data.error}`;
-                }
-            } catch (error) {
-                resultDiv.className = 'result error';
-                resultDiv.textContent = `❌ Ошибка сети: ${error.message}`;
-            }
-        }
-
         async function createAllUsers() {
             const resultDiv = document.getElementById('result');
             resultDiv.style.display = 'block';
             resultDiv.className = 'result';
-            resultDiv.textContent = 'Создаем всех пользователей...';
+            resultDiv.textContent = 'Создаем студента...';
 
             try {
-                // Создаем студента
+                // Создаем только студента
                 await createStudent();
-                await new Promise(resolve => setTimeout(resolve, 1000));
-                
-                // Создаем преподавателя
-                await createTeacher();
                 
                 resultDiv.className = 'result success';
-                resultDiv.textContent = `✅ Все пользователи созданы!\n\n👨‍🎓 Студент: +7 777 111-11-11 / 123456\n👨‍🏫 Преподаватель: +7 777 222-22-22 / 123456\n👨‍💼 Администратор: admin@example.com / admin123`;
+                resultDiv.textContent = `✅ Студент создан!\n\n👨‍🎓 Студент: +7 777 111-11-11 / 123456\n\n⚠️ Преподавателей создает только администратор через админ-панель!`;
                 
             } catch (error) {
                 resultDiv.className = 'result error';
-                resultDiv.textContent = `❌ Ошибка создания пользователей: ${error.message}`;
+                resultDiv.textContent = `❌ Ошибка создания студента: ${error.message}`;
             }
         }
 

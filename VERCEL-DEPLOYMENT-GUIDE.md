@@ -88,13 +88,13 @@ Online-school/
 После успешного деплоя:
 
 ### 🌐 Доступные страницы:
-- **Главная**: `https://your-app.vercel.app/`
-- **Вход**: `https://your-app.vercel.app/login`
-- **Регистрация**: `https://your-app.vercel.app/register`
-- **Профиль студента**: `https://your-app.vercel.app/profile`
-- **Кабинет преподавателя**: `https://your-app.vercel.app/teacher/dashboard`
-- **Админ-панель**: `https://your-app.vercel.app/admin`
-- **Видеоуроки**: `https://your-app.vercel.app/lesson/[id]`
+- **Главная**: `https://online-school-online-school-nextjs.vercel.app/`
+- **Вход**: `https://online-school-online-school-nextjs.vercel.app/login`
+- **Регистрация**: `https://online-school-online-school-nextjs.vercel.app/register`
+- **Профиль студента**: `https://online-school-online-school-nextjs.vercel.app/profile`
+- **Кабинет преподавателя**: `https://online-school-online-school-nextjs.vercel.app/teacher/dashboard`
+- **Админ-панель**: `https://online-school-online-school-nextjs.vercel.app/admin`
+- **Видеоуроки**: `https://online-school-online-school-nextjs.vercel.app/lesson/[id]`
 
 ### 🔐 Тестовые аккаунты:
 - **Студент**: +77001111111 / 123456

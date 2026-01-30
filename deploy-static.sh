@@ -31,7 +31,7 @@ vercel --prod --yes
 
 echo "✅ Деплой завершен!"
 echo ""
-echo "🔗 Ваш сайт доступен по адресу: https://online-school-three.vercel.app"
+echo "🔗 Ваш сайт доступен по адресу: https://online-school-online-school-nextjs.vercel.app"
 echo ""
 echo "📋 Не забудьте:"
 echo "1. Проверить работу всех страниц"

@@ -85,7 +85,7 @@ Use the following test files to verify functionality:
 - `test-api.html` - Test API endpoints
 
 All test files are accessible via Vercel deployment at:
-https://online-school-three.vercel.app/
+https://online-school-online-school-nextjs.vercel.app/
 
 ## 🔍 Verification
 

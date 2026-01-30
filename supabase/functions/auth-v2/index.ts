@@ -115,7 +115,7 @@ serve(async (req) => {
         // Если это преподаватель, создаем запись в teachers
         if (role === 'teacher') {
           const { error: teacherError } = await supabase
-            .from('teachers_new')
+            .from('teachers')
             .insert({
               user_id: user.id,
               bio: body.bio || '',
@@ -218,7 +218,7 @@ serve(async (req) => {
         let teacherData = null
         if (role === 'teacher') {
           const { data: teacher } = await supabase
-            .from('teachers_new')
+            .from('teachers')
             .select('*')
             .eq('user_id', user.id)
             .single()
@@ -292,7 +292,7 @@ serve(async (req) => {
       let teacherData = null
       if (session.users.role === 'teacher') {
         const { data: teacher } = await supabase
-          .from('teachers_new')
+          .from('teachers')
           .select('*')
           .eq('user_id', session.users.id)
           .single()

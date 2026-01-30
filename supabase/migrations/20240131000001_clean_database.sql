@@ -11,7 +11,6 @@ DROP TABLE IF EXISTS bookings CASCADE;
 DROP TABLE IF EXISTS teacher_sessions CASCADE;
 DROP TABLE IF EXISTS teachers CASCADE;
 DROP TABLE IF EXISTS sessions CASCADE;
-DROP TABLE IF EXISTS sms_codes CASCADE;
 DROP TABLE IF EXISTS pending_registrations CASCADE;
 DROP TABLE IF EXISTS transactions CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
@@ -22,6 +21,7 @@ CREATE TABLE users (
     role TEXT NOT NULL DEFAULT 'student' CHECK (role IN ('student', 'teacher', 'admin')),
     name TEXT NOT NULL,
     phone TEXT UNIQUE NOT NULL,
+    password TEXT NOT NULL,
     email TEXT UNIQUE,
     grade INTEGER, -- Класс для студентов
     has_trial_lesson BOOLEAN DEFAULT FALSE,
@@ -293,11 +293,11 @@ CREATE POLICY "Sessions are publicly accessible" ON sessions
 
 -- 13. ВСТАВЛЯЕМ ТЕСТОВЫЕ ДАННЫЕ
 
--- Тестовые пользователи
-INSERT INTO users (id, role, name, phone, email, grade, has_trial_lesson) VALUES
-    ('11111111-1111-1111-1111-111111111111', 'student', 'Жанат Х', '+77001111111', 'student@example.com', 8, false),
-    ('22222222-2222-2222-2222-222222222222', 'teacher', 'Анна Петровна', '+77002222222', 'teacher@example.com', null, false),
-    ('33333333-3333-3333-3333-333333333333', 'admin', 'Администратор', '+77003333333', 'admin@example.com', null, false);
+-- Тестовые пользователи (пароль для всех: 123456, хеш: 8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92)
+INSERT INTO users (id, role, name, phone, password, email, grade, has_trial_lesson) VALUES
+    ('11111111-1111-1111-1111-111111111111', 'student', 'Жанат Х', '+77001111111', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 'student@example.com', 8, false),
+    ('22222222-2222-2222-2222-222222222222', 'teacher', 'Анна Петровна', '+77002222222', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 'teacher@example.com', null, false),
+    ('33333333-3333-3333-3333-333333333333', 'admin', 'Администратор', '+77003333333', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 'admin@example.com', null, false);
 
 -- Тестовый преподаватель
 INSERT INTO teachers (user_id, bio, subjects, price_per_lesson, is_active) VALUES

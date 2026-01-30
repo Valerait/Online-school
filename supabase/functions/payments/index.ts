@@ -60,7 +60,7 @@ serve(async (req) => {
           .from('lessons')
           .select(`
             *,
-            teachers_new(
+            teachers(
               price_per_lesson,
               users(name)
             )
@@ -92,7 +92,7 @@ serve(async (req) => {
         }
 
         // Определяем сумму платежа
-        const paymentAmount = amount || lesson.teachers_new?.price_per_lesson || 7000
+        const paymentAmount = amount || lesson.teachers?.price_per_lesson || 7000
 
         // Создаем запись о платеже
         const { data: payment, error: paymentError } = await supabase
@@ -122,7 +122,7 @@ serve(async (req) => {
           orderId: payment.id,
           description: `Оплата урока ${lesson.subject} - ${lesson.date}`,
           studentName: session.users.name,
-          teacherName: lesson.teachers_new?.users?.name
+          teacherName: lesson.teachers?.users?.name
         })
 
         // Обновляем платеж с внешним ID

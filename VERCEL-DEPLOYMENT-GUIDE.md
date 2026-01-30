@@ -59,18 +59,14 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzd
 ```json
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "online-school-nextjs/package.json",
-      "use": "@vercel/next"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "online-school-nextjs/$1"
-    }
-  ]
+  "buildCommand": "cd online-school-nextjs && npm run build",
+  "outputDirectory": "online-school-nextjs/.next",
+  "installCommand": "cd online-school-nextjs && npm install",
+  "framework": "nextjs",
+  "env": {
+    "NEXT_PUBLIC_SUPABASE_URL": "https://obzatycdwtdmhgqotbgs.supabase.co",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "eyJ..."
+  }
 }
 ```
 

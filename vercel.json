@@ -1,7 +1,3 @@
 {
-  "version": 2,
-  "ignoreCommand": "npx turbo-ignore",
-  "buildCommand": "npm run build",
-  "outputDirectory": ".next",
-  "installCommand": "npm install --production=false"
+  "version": 2
 }

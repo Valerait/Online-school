@@ -1,18 +1,21 @@
 # Ignore root level files (old Express server)
 /node_modules
-/package.json
-/package-lock.json
-/server.js
-/local-server.js
 
 # Ignore test files
 test-*.html
 check-admin.html
 create-admin-user.html
 
-# Ignore documentation
-*.md
-!online-school-nextjs/README.md
+# Ignore documentation (but keep essential ones)
+ADMIN-PANEL-COMPLETE.md
+COMPLETE.md
+DATABASE-CLEAN-COMPLETE.md
+DEPLOYMENT-SUCCESS.md
+FINAL-RELEASE-REPORT.md
+JITSI-INTEGRATION-COMPLETE.md
+PROJECT-CLEANUP-COMPLETE.md
+PROJECT-NAMES.md
+VERCEL-DEPLOYMENT-GUIDE.md
 
 # Ignore Supabase (already deployed)
 /supabase
@@ -20,5 +23,8 @@ create-admin-user.html
 # Ignore skill folder
 /skill
 
-# Keep only Next.js project
+# Keep Next.js project and essential files
 !online-school-nextjs/
+!README.md
+!vercel.json
+!package.json

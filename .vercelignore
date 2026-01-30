@@ -1,0 +1,24 @@
+# Ignore root level files (old Express server)
+/node_modules
+/package.json
+/package-lock.json
+/server.js
+/local-server.js
+
+# Ignore test files
+test-*.html
+check-admin.html
+create-admin-user.html
+
+# Ignore documentation
+*.md
+!online-school-nextjs/README.md
+
+# Ignore Supabase (already deployed)
+/supabase
+
+# Ignore skill folder
+/skill
+
+# Keep only Next.js project
+!online-school-nextjs/

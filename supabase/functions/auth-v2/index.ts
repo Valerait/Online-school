@@ -65,8 +65,15 @@ serve(async (req) => {
           )
         }
 
-        // Валидация роли
-        if (!['student', 'teacher', 'admin'].includes(role)) {
+        // Валидация роли - преподавателей может создавать только администратор
+        if (role === 'teacher') {
+          return new Response(
+            JSON.stringify({ error: 'Преподавателей может создавать только администратор' }),
+            { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          )
+        }
+
+        if (!['student', 'admin'].includes(role)) {
           return new Response(
             JSON.stringify({ error: 'Неверная роль пользователя' }),
             { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -110,24 +117,6 @@ serve(async (req) => {
             JSON.stringify({ error: 'Ошибка создания пользователя' }),
             { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           )
-        }
-
-        // Если это преподаватель, создаем запись в teachers
-        if (role === 'teacher') {
-          const { error: teacherError } = await supabase
-            .from('teachers')
-            .insert({
-              user_id: user.id,
-              bio: body.bio || '',
-              subjects: body.subjects || [],
-              price_per_lesson: body.price_per_lesson || 7000,
-              is_active: true
-            })
-
-          if (teacherError) {
-            console.error('Teacher creation error:', teacherError)
-            // Не возвращаем ошибку, так как пользователь уже создан
-          }
         }
 
         console.log('✅ User registered successfully:', user.id)

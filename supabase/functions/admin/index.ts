@@ -229,6 +229,56 @@ serve(async (req) => {
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
 
+      } else if (action === 'teachers') {
+        // Получаем всех преподавателей с их данными
+        const { data: teachers, error } = await supabase
+          .from('users')
+          .select(`
+            id,
+            name,
+            phone,
+            email,
+            created_at,
+            teachers(
+              id,
+              bio,
+              subjects,
+              price_per_lesson,
+              is_active
+            )
+          `)
+          .eq('role', 'teacher')
+          .order('created_at', { ascending: false })
+
+        if (error) {
+          return new Response(
+            JSON.stringify({ error: 'Ошибка получения преподавателей' }),
+            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          )
+        }
+
+        // Преобразуем данные для удобства
+        const teachersData = teachers?.map(teacher => ({
+          id: teacher.teachers?.[0]?.id || teacher.id,
+          user_id: teacher.id,
+          name: teacher.name,
+          phone: teacher.phone,
+          email: teacher.email,
+          bio: teacher.teachers?.[0]?.bio || '',
+          subjects: teacher.teachers?.[0]?.subjects || [],
+          price_per_lesson: teacher.teachers?.[0]?.price_per_lesson || 7000,
+          is_active: teacher.teachers?.[0]?.is_active || true,
+          created_at: teacher.created_at
+        })) || []
+
+        return new Response(
+          JSON.stringify({
+            success: true,
+            teachers: teachersData
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+
       } else if (action === 'reports') {
         const period = url.searchParams.get('period') || 'month'
         
@@ -336,7 +386,107 @@ serve(async (req) => {
     if (req.method === 'POST') {
       const body = await req.json()
 
-      if (action === 'create-user') {
+      if (action === 'create_teacher') {
+        const { name, phone, email, bio, subjects, price_per_lesson, password } = body
+
+        if (!name || !phone || !password || !subjects || subjects.length === 0) {
+          return new Response(
+            JSON.stringify({ error: 'Имя, телефон, пароль и предметы обязательны' }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          )
+        }
+
+        // Проверяем, существует ли пользователь с таким телефоном
+        const { data: existingUser } = await supabase
+          .from('users')
+          .select('id')
+          .eq('phone', phone)
+          .single()
+
+        if (existingUser) {
+          return new Response(
+            JSON.stringify({ error: 'Пользователь с таким номером уже существует' }),
+            { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          )
+        }
+
+        // Хешируем пароль
+        const hashedPassword = await hashPassword(password)
+
+        // Создаем пользователя
+        const { data: user, error: userError } = await supabase
+          .from('users')
+          .insert({
+            name,
+            phone,
+            email: email || null,
+            password: hashedPassword,
+            role: 'teacher'
+          })
+          .select()
+          .single()
+
+        if (userError) {
+          console.error('User creation error:', userError)
+          return new Response(
+            JSON.stringify({ error: 'Ошибка создания пользователя: ' + userError.message }),
+            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          )
+        }
+
+        // Создаем запись преподавателя
+        const { data: teacher, error: teacherError } = await supabase
+          .from('teachers')
+          .insert({
+            user_id: user.id,
+            bio: bio || '',
+            subjects: subjects,
+            price_per_lesson: price_per_lesson || 7000,
+            is_active: true
+          })
+          .select()
+          .single()
+
+        if (teacherError) {
+          console.error('Teacher creation error:', teacherError)
+          // Удаляем пользователя если не удалось создать преподавателя
+          await supabase.from('users').delete().eq('id', user.id)
+          return new Response(
+            JSON.stringify({ error: 'Ошибка создания профиля преподавателя: ' + teacherError.message }),
+            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          )
+        }
+
+        return new Response(
+          JSON.stringify({
+            success: true,
+            user,
+            teacher
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+
+      } else if (action === 'update_teacher_status') {
+        const { teacherId, isActive } = body
+
+        const { error } = await supabase
+          .from('teachers')
+          .update({ is_active: isActive })
+          .eq('id', teacherId)
+
+        if (error) {
+          return new Response(
+            JSON.stringify({ error: 'Ошибка обновления статуса преподавателя: ' + error.message }),
+            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          )
+        }
+
+        return new Response(
+          JSON.stringify({ success: true }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+
+      } else if (action === 'create-user') {
         const { name, phone, email, role, grade, password } = body
 
         // Создаем пользователя
@@ -502,3 +652,11 @@ serve(async (req) => {
     )
   }
 })
+
+async function hashPassword(password: string): Promise<string> {
+  const encoder = new TextEncoder()
+  const data = encoder.encode(password)
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data)
+  const hashArray = Array.from(new Uint8Array(hashBuffer))
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
+}

@@ -247,7 +247,7 @@ export default function AdminDashboardPage() {
         </div>
 
         {/* Быстрые действия */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
           <Button
             onClick={() => router.push('/admin/users')}
             className="h-20 bg-blue-600 hover:bg-blue-700 flex flex-col items-center justify-center"
@@ -256,6 +256,16 @@ export default function AdminDashboardPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
             </svg>
             Управление пользователями
+          </Button>
+
+          <Button
+            onClick={() => router.push('/admin/teachers')}
+            className="h-20 bg-orange-600 hover:bg-orange-700 flex flex-col items-center justify-center"
+          >
+            <svg className="w-8 h-8 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-5 0H3m2 0h3M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+            </svg>
+            Создать преподавателя
           </Button>
 
           <Button

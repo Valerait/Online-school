@@ -9,8 +9,8 @@ import { Input } from '@/components/ui/Input'
 
 export default function TeacherLoginPage() {
   const [formData, setFormData] = useState({
-    phone: '+77002222222',
-    password: '123456'
+    phone: '',
+    password: ''
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -101,17 +101,6 @@ export default function TeacherLoginPage() {
               </p>
             </div>
           </form>
-
-          {/* Тестовые данные */}
-          <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-            <h4 className="text-sm font-medium text-gray-700 mb-2">🧪 Тестовые данные:</h4>
-            <div className="text-xs text-gray-600 space-y-1">
-              <p><strong>Email:</strong> teacher@example.com</p>
-              <p><strong>Телефон:</strong> +77002222222</p>
-              <p><strong>Пароль:</strong> 123456</p>
-              <p><strong>Предметы:</strong> Математика, Физика</p>
-            </div>
-          </div>
         </div>
       </div>
     </div>

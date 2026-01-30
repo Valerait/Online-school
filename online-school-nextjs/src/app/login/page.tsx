@@ -142,12 +142,12 @@ export default function LoginPage() {
             </div>
           </form>
 
-          {/* Тестовые данные */}
+          {/* Информация для тестирования */}
           <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-            <h4 className="text-sm font-medium text-gray-700 mb-2">🧪 Тестовые аккаунты:</h4>
+            <h4 className="text-sm font-medium text-gray-700 mb-2">ℹ️ Для тестирования:</h4>
             <div className="text-xs text-gray-600 space-y-1">
-              <p><strong>Студент:</strong> +77001111111 / 123456</p>
-              <p><strong>Преподаватель:</strong> +77002222222 / 123456</p>
+              <p><strong>Студент:</strong> Создайте аккаунт через регистрацию</p>
+              <p><strong>Преподаватель:</strong> Обратитесь к администратору</p>
               <p><strong>Администратор:</strong> admin@example.com / admin123</p>
             </div>
           </div>

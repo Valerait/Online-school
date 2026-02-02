@@ -95,10 +95,26 @@ export async function apiCall(endpoint: string, options: RequestInit = {}) {
     },
   })
 
+  const responseText = await response.text()
+  
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: response.statusText }))
-    throw new Error(error.error || `HTTP ${response.status}`)
+    let errorMessage = `HTTP ${response.status}: ${response.statusText}`
+    
+    try {
+      const errorData = JSON.parse(responseText)
+      errorMessage = errorData.error || errorMessage
+    } catch {
+      // Если не удается парсить JSON, используем текст ответа
+      errorMessage = responseText || errorMessage
+    }
+    
+    throw new Error(errorMessage)
   }
 
-  return response.json()
+  try {
+    return JSON.parse(responseText)
+  } catch {
+    // Если ответ не JSON, возвращаем как есть
+    return { data: responseText }
+  }
 }

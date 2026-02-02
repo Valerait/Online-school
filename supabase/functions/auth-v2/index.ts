@@ -114,7 +114,7 @@ serve(async (req) => {
         if (userError) {
           console.error('User creation error:', userError)
           return new Response(
-            JSON.stringify({ error: 'Ошибка создания пользователя' }),
+            JSON.stringify({ error: 'Ошибка создания пользователя: ' + userError.message }),
             { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           )
         }

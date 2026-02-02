@@ -92,10 +92,17 @@ export default function RegisterPage() {
                 onChange={handleChange}
                 options={[
                   { value: 'student', label: 'Студент' },
-                  { value: 'teacher', label: 'Преподаватель' },
                   { value: 'admin', label: 'Администратор' },
                 ]}
               />
+
+              {formData.role === 'teacher' && (
+                <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded-lg">
+                  <p className="text-sm">
+                    ⚠️ Преподавателей может создавать только администратор через админ-панель.
+                  </p>
+                </div>
+              )}
 
               <Input
                 label="Полное имя"

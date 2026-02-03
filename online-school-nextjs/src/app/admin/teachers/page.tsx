@@ -196,13 +196,12 @@ export default function AdminTeachersPage() {
               <p className="text-orange-100 mt-1">Создание и управление преподавателями</p>
             </div>
             <div className="flex gap-2">
-              <Button 
-                variant="outline" 
+              <button 
                 onClick={() => router.push('/admin')}
-                className="text-white border-white hover:bg-white hover:text-orange-600"
+                className="px-4 py-2 bg-white/20 text-white border border-white/30 rounded-lg hover:bg-white/30 transition-colors duration-200 flex items-center gap-2"
               >
                 ← Назад в админку
-              </Button>
+              </button>
             </div>
           </div>
         </div>

@@ -111,20 +111,18 @@ export default function AdminDashboardPage() {
               <p className="text-purple-100 text-sm">Администратор: {user?.name}</p>
             </div>
             <div className="flex gap-2">
-              <Button 
-                variant="outline" 
+              <button 
                 onClick={() => router.push('/')}
-                className="text-white border-white hover:bg-white hover:text-purple-600"
+                className="px-4 py-2 bg-white/20 text-white border border-white/30 rounded-lg hover:bg-white/30 transition-colors duration-200 flex items-center gap-2"
               >
                 На главную
-              </Button>
-              <Button 
-                variant="outline" 
+              </button>
+              <button 
                 onClick={logout}
-                className="text-white border-white hover:bg-white hover:text-purple-600"
+                className="px-4 py-2 bg-white/20 text-white border border-white/30 rounded-lg hover:bg-white/30 transition-colors duration-200 flex items-center gap-2"
               >
                 Выйти
-              </Button>
+              </button>
             </div>
           </div>
         </div>

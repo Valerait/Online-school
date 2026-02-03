@@ -232,42 +232,42 @@ serve(async (req) => {
       } else if (action === 'teachers') {
         // Получаем всех преподавателей с их данными
         const { data: teachers, error } = await supabase
-          .from('users')
+          .from('teachers')
           .select(`
             id,
-            name,
-            phone,
-            email,
+            bio,
+            subjects,
+            price_per_lesson,
+            is_active,
             created_at,
-            teachers(
+            users!inner(
               id,
-              bio,
-              subjects,
-              price_per_lesson,
-              is_active
+              name,
+              phone,
+              email
             )
           `)
-          .eq('role', 'teacher')
           .order('created_at', { ascending: false })
 
         if (error) {
+          console.error('Teachers fetch error:', error)
           return new Response(
-            JSON.stringify({ error: 'Ошибка получения преподавателей' }),
+            JSON.stringify({ error: 'Ошибка получения преподавателей: ' + error.message }),
             { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           )
         }
 
-        // Преобразуем данные для удобства
+        // Преобразуем данные для удобности
         const teachersData = teachers?.map(teacher => ({
-          id: teacher.teachers?.[0]?.id || teacher.id,
-          user_id: teacher.id,
-          name: teacher.name,
-          phone: teacher.phone,
-          email: teacher.email,
-          bio: teacher.teachers?.[0]?.bio || '',
-          subjects: teacher.teachers?.[0]?.subjects || [],
-          price_per_lesson: teacher.teachers?.[0]?.price_per_lesson || 7000,
-          is_active: teacher.teachers?.[0]?.is_active || true,
+          id: teacher.id,
+          user_id: teacher.users.id,
+          name: teacher.users.name,
+          phone: teacher.users.phone,
+          email: teacher.users.email,
+          bio: teacher.bio || '',
+          subjects: teacher.subjects || [],
+          price_per_lesson: teacher.price_per_lesson || 7000,
+          is_active: teacher.is_active,
           created_at: teacher.created_at
         })) || []
 

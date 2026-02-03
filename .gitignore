@@ -46,8 +46,3 @@ supabase/.temp/
 
 # Kiro
 .kiro/
-
-# Test files (optional - можно оставить для демонстрации)
-# test-*.html
-# check-admin.html
-# create-admin-user.html

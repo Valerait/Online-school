@@ -610,6 +610,33 @@ serve(async (req) => {
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
 
+      } else if (action === 'assign-teacher') {
+        const { bookingId, teacherId } = body
+
+        if (!bookingId || !teacherId) {
+          return new Response(
+            JSON.stringify({ error: 'ID заявки и ID преподавателя обязательны' }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          )
+        }
+
+        const { error } = await supabase
+          .from('bookings')
+          .update({ teacher_id: teacherId })
+          .eq('id', bookingId)
+
+        if (error) {
+          return new Response(
+            JSON.stringify({ error: 'Ошибка назначения преподавателя: ' + error.message }),
+            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          )
+        }
+
+        return new Response(
+          JSON.stringify({ success: true }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+
       } else if (action === 'update-payment-status') {
         const { paymentId, status } = body
 

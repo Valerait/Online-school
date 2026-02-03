@@ -53,6 +53,7 @@ export default function AdminLessonsPage() {
   
   const [lessons, setLessons] = useState<Lesson[]>([])
   const [bookings, setBookings] = useState<Booking[]>([])
+  const [teachers, setTeachers] = useState<any[]>([])
   const [filteredLessons, setFilteredLessons] = useState<Lesson[]>([])
   const [filteredBookings, setFilteredBookings] = useState<Booking[]>([])
   const [loading, setLoading] = useState(true)
@@ -87,9 +88,10 @@ export default function AdminLessonsPage() {
   const loadData = async () => {
     setLoading(true)
     try {
-      const [lessonsData, bookingsData] = await Promise.all([
+      const [lessonsData, bookingsData, teachersData] = await Promise.all([
         apiCall(`/admin?action=lessons&sessionId=${sessionId}`),
-        apiCall(`/admin?action=bookings&sessionId=${sessionId}`)
+        apiCall(`/admin?action=bookings&sessionId=${sessionId}`),
+        apiCall(`/admin?action=teachers&sessionId=${sessionId}`)
       ])
       
       if (lessonsData.success) {
@@ -99,8 +101,12 @@ export default function AdminLessonsPage() {
       if (bookingsData.success) {
         setBookings(bookingsData.bookings || [])
       }
+
+      if (teachersData.success) {
+        setTeachers(teachersData.teachers || [])
+      }
       
-      if (!lessonsData.success || !bookingsData.success) {
+      if (!lessonsData.success || !bookingsData.success || !teachersData.success) {
         setError('Ошибка загрузки данных')
       }
     } catch (error) {
@@ -217,6 +223,25 @@ export default function AdminLessonsPage() {
     } catch (error) {
       console.error('Error deleting lesson:', error)
       setError('Ошибка удаления урока')
+    }
+  }
+
+  const assignTeacher = async (bookingId: string, teacherId: string) => {
+    try {
+      const data = await apiCall(`/admin?action=assign-teacher&sessionId=${sessionId}`, {
+        method: 'POST',
+        body: JSON.stringify({ bookingId, teacherId })
+      })
+
+      if (data.success) {
+        setError('')
+        loadData()
+      } else {
+        setError(data.error || 'Ошибка назначения преподавателя')
+      }
+    } catch (error) {
+      console.error('Error assigning teacher:', error)
+      setError('Ошибка назначения преподавателя')
     }
   }
 
@@ -506,8 +531,32 @@ export default function AdminLessonsPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">
-                          {booking.teacher?.name || 'Не назначен'}
+                          {booking.teacher?.name || (
+                            <span className="text-red-500">Не назначен</span>
+                          )}
                         </div>
+                        {!booking.teacher && teachers.length > 0 && (
+                          <div className="mt-1">
+                            <Select
+                              value=""
+                              onChange={(e) => {
+                                if (e.target.value) {
+                                  assignTeacher(booking.id, e.target.value)
+                                }
+                              }}
+                              options={[
+                                { value: '', label: 'Назначить преподавателя' },
+                                ...teachers
+                                  .filter(teacher => teacher.subjects.includes(booking.subject))
+                                  .map(teacher => ({
+                                    value: teacher.user_id,
+                                    label: teacher.name
+                                  }))
+                              ]}
+                              className="text-xs"
+                            />
+                          </div>
+                        )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">{formatDate(booking.date)}</div>

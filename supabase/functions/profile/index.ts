@@ -105,9 +105,28 @@ serve(async (req) => {
           )
         }
 
+        // Находим подходящего преподавателя для предмета
+        const { data: availableTeachers } = await supabase
+          .from('teachers')
+          .select(`
+            id,
+            user_id,
+            subjects,
+            users!inner(id, name, phone)
+          `)
+          .contains('subjects', [subject])
+          .eq('is_active', true)
+
+        let teacherId = null
+        if (availableTeachers && availableTeachers.length > 0) {
+          // Выбираем первого доступного преподавателя
+          teacherId = availableTeachers[0].user_id
+        }
+
         // Создаем заявку
         const bookingData = {
           user_id: user.id,
+          teacher_id: teacherId, // Назначаем преподавателя если найден
           subject,
           date,
           time,

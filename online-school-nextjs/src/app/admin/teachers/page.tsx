@@ -107,11 +107,9 @@ export default function AdminTeachersPage() {
       // Генерируем пароль
       const password = generatePassword()
 
-      const response = await apiCall('/admin', {
+      const response = await apiCall(`/admin?action=create_teacher&sessionId=${sessionId}`, {
         method: 'POST',
         body: JSON.stringify({
-          action: 'create_teacher',
-          sessionId,
           ...formData,
           password
         })
@@ -142,11 +140,9 @@ export default function AdminTeachersPage() {
 
   const toggleTeacherStatus = async (teacherId: string, isActive: boolean) => {
     try {
-      const response = await apiCall('/admin', {
+      const response = await apiCall(`/admin?action=update_teacher_status&sessionId=${sessionId}`, {
         method: 'POST',
         body: JSON.stringify({
-          action: 'update_teacher_status',
-          sessionId,
           teacherId,
           isActive: !isActive
         })

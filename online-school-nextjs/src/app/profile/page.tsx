@@ -169,9 +169,12 @@ export default function ProfilePage() {
               <p className="text-blue-100 mt-1">{user.name}</p>
               <p className="text-blue-100">{user.phone} • {user.grade} класс</p>
             </div>
-            <Button variant="outline" onClick={logout} className="text-white border-white hover:bg-white hover:text-blue-600">
+            <button 
+              onClick={logout}
+              className="px-4 py-2 bg-white/20 text-white border border-white/30 rounded-lg hover:bg-white/30 transition-colors duration-200 flex items-center gap-2"
+            >
               Выйти
-            </Button>
+            </button>
           </div>
         </div>
       </div>

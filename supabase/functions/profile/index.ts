@@ -108,14 +108,12 @@ serve(async (req) => {
         // Создаем заявку
         const bookingData = {
           user_id: user.id,
-          student_name: user.name,
-          student_phone: user.phone,
-          grade: user.grade,
           subject,
           date,
           time,
           type,
-          status: 'pending'
+          status: 'pending',
+          message: `Заявка от ${user.name} (${user.phone}), класс: ${user.grade || 'не указан'}`
         };
 
         console.log('📝 Creating booking with data:', bookingData);

@@ -27,7 +27,7 @@ export default function HomePage() {
     setMessage('')
 
     try {
-      await apiCall('/bookings', {
+      const result = await apiCall('/bookings', {
         method: 'POST',
         body: JSON.stringify({
           student_name: formData.studentName,
@@ -41,6 +41,12 @@ export default function HomePage() {
           type: 'trial'
         })
       })
+
+      if (result.success) {
+        setMessage(result.message || 'Заявка успешно отправлена! Мы свяжемся с вами в ближайшее время.')
+      } else {
+        throw new Error(result.error || 'Ошибка отправки заявки')
+      }
 
       setMessage('Заявка успешно отправлена! Мы свяжемся с вами в ближайшее время.')
       setFormData({

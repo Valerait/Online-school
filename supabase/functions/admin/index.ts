@@ -380,6 +380,19 @@ serve(async (req) => {
           }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
+
+      } else if (action === 'export-report') {
+        // Экспорт отчета (заглушка)
+        const format = url.searchParams.get('format') || 'csv'
+        
+        return new Response(
+          JSON.stringify({
+            success: true,
+            message: `Экспорт в формате ${format} будет доступен в следующих версиях`,
+            downloadUrl: null
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
       }
     }
 
@@ -634,6 +647,44 @@ serve(async (req) => {
 
         return new Response(
           JSON.stringify({ success: true }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+
+      } else if (action === 'create-payment') {
+        const { userId, lessonId, amount, method, description } = body
+
+        if (!userId || !amount) {
+          return new Response(
+            JSON.stringify({ error: 'ID пользователя и сумма обязательны' }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          )
+        }
+
+        const { data: payment, error } = await supabase
+          .from('payments')
+          .insert({
+            user_id: userId,
+            lesson_id: lessonId || null,
+            amount: parseFloat(amount),
+            method: method || 'manual',
+            status: 'pending',
+            description: description || 'Ручное создание платежа'
+          })
+          .select()
+          .single()
+
+        if (error) {
+          return new Response(
+            JSON.stringify({ error: 'Ошибка создания платежа: ' + error.message }),
+            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          )
+        }
+
+        return new Response(
+          JSON.stringify({
+            success: true,
+            payment
+          }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
       }

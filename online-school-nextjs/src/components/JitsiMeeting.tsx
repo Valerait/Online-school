@@ -60,7 +60,7 @@ export function JitsiMeeting({
           height: 600,
           parentNode: jitsiContainerRef.current,
           configOverwrite: {
-            startWithAudioMuted: userRole === 'student', // Студенты начинают с выключенным микрофоном
+            startWithAudioMuted: userRole === 'student', // Учащиеся начинают с выключенным микрофоном
             startWithVideoMuted: false,
             enableWelcomePage: false,
             enableClosePage: false,

@@ -68,7 +68,7 @@ serve(async (req) => {
     }
 
     if (req.method === 'GET') {
-      // Получаем данные урока с информацией о студенте и преподавателе
+      // Получаем данные урока с информацией об учащемся и преподавателе
       const { data: lesson, error } = await supabase
         .from('lessons')
         .select(`
@@ -97,7 +97,7 @@ serve(async (req) => {
         // Для преподавателя проверяем, что он ведет этот урок
         hasAccess = lesson.teacher_id === userId
       } else if (userRole === 'student') {
-        // Для студента проверяем, что это его урок
+        // Для учащегося проверяем, что это его урок
         hasAccess = lesson.student_id === userId
       } else if (userRole === 'admin') {
         // Админ имеет доступ ко всем урокам

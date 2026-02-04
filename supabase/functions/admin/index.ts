@@ -127,7 +127,7 @@ serve(async (req) => {
         )
 
       } else if (action === 'lessons') {
-        // Получаем все уроки с информацией о студентах и преподавателях
+        // Получаем все уроки с информацией об учащихся и преподавателях
         const { data: lessons, error } = await supabase
           .from('lessons')
           .select(`

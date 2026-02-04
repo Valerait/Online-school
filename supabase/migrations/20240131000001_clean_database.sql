@@ -23,7 +23,7 @@ CREATE TABLE users (
     phone TEXT UNIQUE NOT NULL,
     password TEXT NOT NULL,
     email TEXT UNIQUE,
-    grade INTEGER, -- Класс для студентов
+    grade INTEGER, -- Класс для учащихся
     has_trial_lesson BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );

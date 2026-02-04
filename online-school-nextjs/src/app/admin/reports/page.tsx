@@ -251,7 +251,7 @@ export default function AdminReportsPage() {
               </div>
               <div className="ml-4">
                 <div className="text-2xl font-bold text-gray-900">{reportData.totalStudents}</div>
-                <div className="text-gray-600">Активных студентов</div>
+                <div className="text-gray-600">Активных учащихся</div>
               </div>
             </div>
           </div>
@@ -422,7 +422,7 @@ export default function AdminReportsPage() {
                       Уроков
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Новых студентов
+                      Новых учащихся
                     </th>
                   </tr>
                 </thead>

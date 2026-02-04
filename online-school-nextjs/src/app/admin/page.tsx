@@ -154,7 +154,7 @@ export default function AdminDashboardPage() {
               </div>
               <div className="ml-4">
                 <div className="text-2xl font-bold text-gray-900">{stats.totalStudents}</div>
-                <div className="text-gray-600">Студентов</div>
+                <div className="text-gray-600">Учащихся</div>
               </div>
             </div>
           </div>

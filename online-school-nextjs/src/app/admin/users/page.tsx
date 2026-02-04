@@ -179,7 +179,7 @@ export default function AdminUsersPage() {
     switch (role) {
       case 'admin': return 'Админ'
       case 'teacher': return 'Преподаватель'
-      case 'student': return 'Студент'
+      case 'student': return 'Учащийся'
       default: return role
     }
   }
@@ -242,7 +242,7 @@ export default function AdminUsersPage() {
                 onChange={(e) => setRoleFilter(e.target.value)}
                 options={[
                   { value: 'all', label: 'Все роли' },
-                  { value: 'student', label: 'Студенты' },
+                  { value: 'student', label: 'Учащиеся' },
                   { value: 'teacher', label: 'Преподаватели' },
                   { value: 'admin', label: 'Администраторы' }
                 ]}
@@ -334,7 +334,7 @@ export default function AdminUsersPage() {
                           value={user.role}
                           onChange={(e) => updateUserRole(user.id, e.target.value)}
                           options={[
-                            { value: 'student', label: 'Студент' },
+                            { value: 'student', label: 'Учащийся' },
                             { value: 'teacher', label: 'Преподаватель' },
                             { value: 'admin', label: 'Админ' }
                           ]}
@@ -398,7 +398,7 @@ export default function AdminUsersPage() {
                 value={newUser.role}
                 onChange={(e) => setNewUser({...newUser, role: e.target.value as any})}
                 options={[
-                  { value: 'student', label: 'Студент' },
+                  { value: 'student', label: 'Учащийся' },
                   { value: 'teacher', label: 'Преподаватель' },
                   { value: 'admin', label: 'Администратор' }
                 ]}

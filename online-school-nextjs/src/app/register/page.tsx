@@ -91,7 +91,7 @@ export default function RegisterPage() {
                 value={formData.role}
                 onChange={handleChange}
                 options={[
-                  { value: 'student', label: 'Студент' },
+                  { value: 'student', label: 'Учащийся' },
                   { value: 'admin', label: 'Администратор' },
                 ]}
               />

@@ -107,7 +107,7 @@ export default function LessonPage() {
         router.push('/teacher/dashboard')
       }
     } else {
-      // Для студентов просто возвращаемся в профиль
+      // Для учащихся просто возвращаемся в профиль
       router.push('/profile')
     }
   }

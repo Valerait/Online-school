@@ -382,7 +382,7 @@ serve(async (req) => {
           }
         }
 
-        // Если это был пробный урок, отмечаем у студента
+        // Если это был пробный урок, отмечаем у учащегося
         const { data: lesson } = await supabase
           .from('lessons')
           .select('student_id, type')

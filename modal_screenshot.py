@@ -26,8 +26,8 @@ image = modal.Image.debian_slim(python_version="3.11").pip_install(
     "playwright install-deps chromium"
 )
 
-# Создаем Volume для хранения скриншотов
-screenshots_volume = modal.Volume.from_name("meas-screenshots", create_if_missing=True)
+# Создаем Volume для хранения скриншотов (персистентное хранилище)
+screenshots_volume = modal.Volume.from_name("meas-screenshots-v2", create_if_missing=True)
 
 
 def send_to_telegram(screenshot_bytes: bytes, filename: str, title: str, timestamp: str):
